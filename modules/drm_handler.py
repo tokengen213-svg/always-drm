@@ -300,14 +300,13 @@ async def drm_handler(bot: Client, m: Message):
 
 # ======================= CLASSPLUS (YELAST API HANDLER) =======================
 
-try:
     if "classplusapp" in original_url:
 
         if original_url.startswith("https://cpvod.testbook.com/"):
-            pre_api_url = original_url.replace(
+            pre_api_url = original_url.replace
                 "https://cpvod.testbook.com/",
                 "https://media-cdn.classplusapp.com/drm/"
-            )
+            
         else:
             pre_api_url = original_url
 
