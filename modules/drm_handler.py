@@ -298,61 +298,58 @@ async def drm_handler(bot: Client, m: Message):
             if "acecwply" in original_url:
                 acecwply_flag = True
 
+# ======================= CLASSPLUS (YELAST API HANDLER) =======================
+
 try:
-    # code before (other platforms, parsing, etc.)
+    if "classplusapp" in original_url:
+
+        if original_url.startswith("https://cpvod.testbook.com/"):
+            pre_api_url = original_url.replace(
+                "https://cpvod.testbook.com/",
+                "https://media-cdn.classplusapp.com/drm/"
+            )
+        else:
+            pre_api_url = original_url
+
+        add_web_headers = "webvideos.classplusapp.com" in original_url
+
+        encoded_url = urllib.parse.quote(pre_api_url, safe="")
+        api_call = f"https://yelast.vercel.app/ITsGOLU_OFFICIAL?url={encoded_url}"
+
+        success = False
+        keys_string = ""
+        api_data_keys = []
+        url = pre_api_url
+
+        for _ in range(2):
+            try:
+                response = requests.get(api_call, timeout=10)
+                data = response.json()
+
+                if data.get("success") is not True:
+                    raise ValueError("API failed")
+
+                if data.get("KEYS") and data.get("MPD"):
+                    url = data["MPD"]
+                    api_data_keys = data["KEYS"]
+                    keys_string = " ".join(f"--key {k}" for k in api_data_keys)
+
+                elif data.get("url"):
+                    url = data["url"]
+                    keys_string = ""
+
+                success = True
+                break
+
+            except Exception:
+                time.sleep(5)
+
+        if not success:
+            url = pre_api_url
+            keys_string = ""
 
 except Exception:
     pass
-
-
-# ======================= CLASSPLUS (YELAST API HANDLER) =======================
-
-if "classplusapp" in original_url:
-
-    if original_url.startswith("https://cpvod.testbook.com/"):
-        pre_api_url = original_url.replace(
-            "https://cpvod.testbook.com/",
-            "https://media-cdn.classplusapp.com/drm/"
-        )
-    else:
-        pre_api_url = original_url
-
-    add_web_headers = "webvideos.classplusapp.com" in original_url
-
-    encoded_url = urllib.parse.quote(pre_api_url, safe="")
-    api_call = f"https://yelast.vercel.app/ITsGOLU_OFFICIAL?url={encoded_url}"
-
-    success = False
-    keys_string = ""
-    api_data_keys = []
-    url = pre_api_url
-
-    for attempt in range(2):
-        try:
-            response = requests.get(api_call, timeout=10)
-            data = response.json()
-
-            if data.get("success") is not True:
-                raise ValueError("API failed")
-
-            if data.get("KEYS") and data.get("MPD"):
-                url = data["MPD"]
-                api_data_keys = data["KEYS"]
-                keys_string = " ".join(f"--key {k}" for k in api_data_keys)
-
-            elif data.get("url"):
-                url = data["url"]
-                keys_string = ""
-
-            success = True
-            break
-
-        except Exception:
-            time.sleep(5)
-
-    if not success:
-        url = pre_api_url
-        keys_string = ""
 
 # ======================= END CLASSPLUS HANDLER =======================
 
