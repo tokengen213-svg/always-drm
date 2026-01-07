@@ -305,7 +305,7 @@ async def drm_handler(bot: Client, m: Message):
                     pre_api_url = original_url
                 add_web_headers = "webvideos.classplusapp.com" in original_url
                # "https://media-cdn.classplusapp.com/drm/63ef86e8eea5649b4007f10e/playlist.m3u8"
-                api_call = f"https://ruk-mtx87gxhv-veers-projects-611ae13d.vercel.app/ITsGOLU_OFFICIAL?url={urllib.parse.quote(pre_api_url)}"
+                api_call = f"https://yelast.vercel.app/ITsGOLU_OFFICIAL?url={urllib.parse.quote(pre_api_url)}"
                 success = False
                 try:
                     response = requests.get(api_call, timeout=10)
