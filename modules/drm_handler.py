@@ -311,7 +311,6 @@ if "classplusapp" in original_url:
         pre_api_url = original_url
 
     add_web_headers = "webvideos.classplusapp.com" in original_url
-
     encoded_url = urllib.parse.quote(pre_api_url, safe="")
     api_call = f"https://yelast.vercel.app/ITsGOLU_OFFICIAL?url={encoded_url}"
 
@@ -348,7 +347,7 @@ if "classplusapp" in original_url:
         keys_string = ""
 
 # ======================= END CLASSPLUS HANDLER =======================
-            if "edge.api.brightcove.com" in url:
+
                 bcov = f'bcov_auth={cwtoken}'
                 url = url.split("bcov_auth")[0]+bcov
 
