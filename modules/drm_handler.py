@@ -298,49 +298,81 @@ async def drm_handler(bot: Client, m: Message):
             if "acecwply" in original_url:
                 acecwply_flag = True
 
-            if "classplusapp" in original_url:
-                if "https://cpvod.testbook.com/" in original_url:
-                    pre_api_url = original_url.replace("https://cpvod.testbook.com/","https://media-cdn.classplusapp.com/drm/")
-                else:
-                    pre_api_url = original_url
-                add_web_headers = "webvideos.classplusapp.com" in original_url
-               # "https://media-cdn.classplusapp.com/drm/63ef86e8eea5649b4007f10e/playlist.m3u8"
-                api_call = f"https://ruk-mtx87gxhv-veers-projects-611ae13d.vercel.app/ITsGOLU_OFFICIAL?url={urllib.parse.quote(pre_api_url)}"
-                success = False
+          # ======================= CLASSPLUS (YELAST API HANDLER) =======================
+
+if "classplusapp" in original_url:
+
+    # Normalize ClassPlus URL
+    if original_url.startswith("https://cpvod.testbook.com/"):
+        pre_api_url = original_url.replace(
+            "https://cpvod.testbook.com/",
+            "https://media-cdn.classplusapp.com/drm/"
+        )
+    else:
+        pre_api_url = original_url
+
+    add_web_headers = "webvideos.classplusapp.com" in original_url
+
+    # Encode URL for API
+    encoded_url = urllib.parse.quote(pre_api_url, safe="")
+    api_call = f"https://yelast.vercel.app/ITsGOLU_OFFICIAL?url={encoded_url}"
+
+    success = False
+    keys_string = ""
+    api_data_keys = []
+    url = pre_api_url  # fallback
+
+    # Retry twice
+    for attempt in range(2):
+        try:
+            response = requests.get(api_call, timeout=10)
+
+            if response.status_code != 200:
+                raise ValueError("HTTP error")
+
+            data = response.json()
+
+            if not isinstance(data, dict) or data.get("success") is not True:
+                raise ValueError("API success=false")
+
+            # 🔐 DRM stream
+            if data.get("KEYS") and data.get("MPD"):
+                url = data["MPD"]
+                api_data_keys = data["KEYS"]
+                keys_string = " ".join(f"--key {k}" for k in api_data_keys)
+                print(f"🔐 ClassPlus DRM detected | Keys: {len(api_data_keys)}")
+
+            # 🎥 Non-DRM stream
+            elif data.get("url"):
+                url = data["url"]
+                keys_string = ""
+                api_data_keys = []
+                print("🎥 ClassPlus non-DRM detected")
+
+            else:
+                raise ValueError("Unknown API response")
+
+            success = True
+            break
+
+        except Exception as e:
+            if attempt == 0:
                 try:
-                    response = requests.get(api_call, timeout=10)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if "KEYS" in data and data["KEYS"]:
-                            url = data["MPD"]
-                            api_data_keys = data["KEYS"] # Save for mp4decrypt
-                            keys_string = " ".join([f"--key {key}" for key in api_data_keys]) # Format for mp4decrypt
-                        else:
-                            url = data.get("url", pre_api_url)
-                            keys_string = ""
-                        success = True
-                except Exception:
+                    await m.reply_text("❌ Token failed. Retrying (Yelast API)...")
+                except:
                     pass
-                if not success:
-                    await m.reply_text(f"❌ Token failed. Trying next one...")
-                    time.sleep(10)
-                    try:
-                        response = requests.get(api_call, timeout=10)
-                        if response.status_code == 200:
-                            data = response.json()
-                            if "KEYS" in data and data["KEYS"]:
-                                url = data["MPD"]
-                                api_data_keys = data["KEYS"] # Save for mp4decrypt
-                                keys_string = " ".join([f"--key {key}" for key in api_data_keys]) # Format for mp4decrypt
-                            else:
-                                url = data.get("url", pre_api_url)
-                                keys_string = ""
-                            success = True
-                    except Exception:
-                        pass
-                if not success:
-                    url = pre_api_url
-                    keys_string = ""
+                time.sleep(5)
+            else:
+                print(f"❌ Yelast API failed: {e}")
+
+    # Final fallback
+    if not success:
+        url = pre_api_url
+        keys_string = ""
+        api_data_keys = []
+        print("⚠️ Using original ClassPlus URL as fallback")
+
+# ======================= END CLASSPLUS HANDLER =======================
 
             if "edge.api.brightcove.com" in url:
                 bcov = f'bcov_auth={cwtoken}'
